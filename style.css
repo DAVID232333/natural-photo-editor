@@ -383,3 +383,14 @@ footer {
   .photo-preview { min-height: 280px; }
   .lightbox img { max-width: 78vw; }
 }
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand img {
+  width: 55px;
+  height: 55px;
+  object-fit: contain;
+}
