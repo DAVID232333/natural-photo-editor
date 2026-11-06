@@ -429,10 +429,7 @@ function renderCurrent() {
     const photo = photos[activeIndex];
     const result = processImage(photo.img, settings());
 
-    copyCanvas(result.original, $("originalCanvas"));
-    copyCanvas(result.output, $("editedCanvas"));
-
-    updateComparison();
+   copyCanvas(result.output, $("editedCanvas"));
 
     $("status").textContent =
       `${result.output.width} × ${result.output.height} pixels`;
@@ -441,18 +438,6 @@ function renderCurrent() {
     $("status").textContent = "Editing failed";
   }
 }
-
-function updateComparison() {
-  const value = Number($("compare").value);
-
-  $("editedCanvas").style.clipPath =
-    `inset(0 0 0 ${value}%)`;
-
-  $("compareLine").style.left = `${value}%`;
-}
-
-$("compare").addEventListener("input", updateComparison);
-
 function canvasBlob(canvas) {
   return new Promise((resolve, reject) => {
     canvas.toBlob(blob => {
