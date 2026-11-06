@@ -331,9 +331,9 @@ function buildGallery() {
       scheduleRender();
     });
 
-    gallery.appendChild(button);
+        gallery.appendChild(button);
   });
-});
+}
 
 // CROP AND STRAIGHTEN
 
