@@ -475,22 +475,48 @@ function saveBlob(blob, filename) {
   setTimeout(() => URL.revokeObjectURL(url), 3000);
 }
 
+
 $("downloadBtn").addEventListener("click", async () => {
-  if (!photos.length) return;
+  if (!photos.length) {
+    alert("Please upload a photo first.");
+    return;
+  }
+
+  const button = $("downloadBtn");
+  button.disabled = true;
+  button.textContent = "Preparing download...";
 
   try {
-    const result = processImage(
-      photos[activeIndex].img,
-      settings()
-    );
+    const photo = photos[activeIndex];
+    const result = processImage(photo.img, settings());
 
     const blob = await canvasBlob(result.output);
-    saveBlob(blob, "Natural_Enhanced_Photo.png");
+
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = "DAVOSHOTIT_Enhanced.png";
+
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    setTimeout(() => {
+      URL.revokeObjectURL(url);
+    }, 10000);
+
+    $("status").textContent = "Download ready!";
+
   } catch (error) {
-    console.error(error);
-    alert("Could not export this photo.");
+    console.error("Download error:", error);
+    alert("Download failed: " + error.message);
+  } finally {
+    button.disabled = false;
+    button.textContent = "Download Photo";
   }
 });
+
 
 $("batchBtn").addEventListener("click", async () => {
   if (!photos.length) return;
