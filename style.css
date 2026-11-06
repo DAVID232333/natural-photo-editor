@@ -395,3 +395,24 @@ footer {
     height: 320px;
   }
 }
+/* PHOTO PREVIEW - NO BEFORE & AFTER */
+
+.photo-preview {
+  width: 100%;
+  min-height: 400px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #111;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.photo-preview canvas {
+  display: block;
+  max-width: 100%;
+  max-height: 600px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
