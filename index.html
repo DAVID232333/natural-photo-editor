@@ -88,20 +88,13 @@
 
     <section class="preview-panel">
       <div class="preview-heading">
-        <h3>Before & After</h3>
+       <h3>Photo Preview</h3>
         <span id="status">Upload a photo to begin</span>
       </div>
 
-      <div class="comparison" id="comparison">
-        <canvas id="originalCanvas"></canvas>
-        <canvas id="editedCanvas"></canvas>
-        <input type="range" id="compare"
-               min="0" max="100" value="50"
-               aria-label="Before and after comparison">
-        <div class="compare-line" id="compareLine"></div>
-        <span class="tag before">Before</span>
-        <span class="tag after">After</span>
-      </div>
+      <div class="photo-preview">
+  <canvas id="editedCanvas"></canvas>
+</div>
 
       <div class="actions">
         <button id="downloadBtn" disabled>
