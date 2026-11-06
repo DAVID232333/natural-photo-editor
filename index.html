@@ -1,1 +1,66 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Natural Photo Editor</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <h1>Natural Photo Editor</h1>
+    <p>Professional photo enhancements. Naturally.</p>
+  </header>
+
+  <main>
+    <section class="editor">
+      <h2>Upload Your Photo</h2>
+
+      <input type="file" id="upload" accept="image/*">
+
+      <div class="controls">
+        <label for="strength">
+          Editing Strength: <span id="strengthValue">35</span>%
+        </label>
+
+        <input type="range" id="strength"
+               min="0" max="100" value="35">
+
+        <label>
+          <input type="checkbox" id="sharpen" checked>
+          Gentle Sharpening
+        </label>
+      </div>
+
+      <button id="enhanceBtn">Auto Enhance Photo</button>
+
+      <h2>Before & After</h2>
+
+      <div class="preview">
+        <div>
+          <h3>Original</h3>
+          <img id="originalPreview" alt="Original photo">
+        </div>
+
+        <div>
+          <h3>Enhanced</h3>
+          <canvas id="editedCanvas"></canvas>
+        </div>
+      </div>
+
+      <button id="downloadBtn" disabled>
+        Download Enhanced Photo
+      </button>
+    </section>
+  </main>
+
+  <footer>
+    <p>Natural edits. Real details. No generative AI.</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
+
