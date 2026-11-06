@@ -3,64 +3,138 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Natural Photo Editor</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Natural Photo Studio</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <header>
-    <h1>Natural Photo Editor</h1>
-    <p>Professional photo enhancements. Naturally.</p>
-  </header>
+<header>
+  <div class="brand">DAVOSHOTIT <span>STUDIO</span></div>
+  <nav>
+    <a href="#editor">Editor</a>
+    <a href="#portfolio">Portfolio</a>
+  </nav>
+</header>
 
-  <main>
-    <section class="editor">
-      <h2>Upload Your Photo</h2>
+<section class="hero">
+  <p class="eyebrow">NATURAL PHOTO ENHANCEMENT</p>
+  <h1>Your photos.<br><span>At their best.</span></h1>
+  <p>Professional color, lighting and detail corrections.
+     No generative AI. No fake skin.</p>
+  <a class="primary-link" href="#editor">Start Editing</a>
+</section>
 
-      <input type="file" id="upload" accept="image/*">
+<main id="editor">
+  <div class="section-title">
+    <h2>Photo Editor</h2>
+    <p>Upload your photos and customize your edits.</p>
+  </div>
 
-      <div class="controls">
-        <label for="strength">
-          Editing Strength: <span id="strengthValue">35</span>%
-        </label>
+  <div class="workspace">
+    <aside class="panel">
+      <h3>Upload</h3>
+      <input type="file" id="upload"
+             accept="image/jpeg,image/png,image/webp"
+             multiple>
+      <p class="hint">JPG, PNG or WebP. Multiple photos supported.</p>
 
-        <input type="range" id="strength"
-               min="0" max="100" value="35">
+      <h3>Presets</h3>
+      <select id="preset">
+        <option value="natural">Natural</option>
+        <option value="portrait">Clean Portrait</option>
+        <option value="golden">Golden Hour</option>
+        <option value="cinematic">Cinematic</option>
+        <option value="night">Night Photography</option>
+      </select>
 
-        <label>
-          <input type="checkbox" id="sharpen" checked>
-          Gentle Sharpening
-        </label>
+      <h3>Auto Enhance</h3>
+      <label>Editing Strength
+        <span id="strengthValue">35</span>%
+      </label>
+      <input id="strength" type="range"
+             min="0" max="100" value="35">
+
+      <h3>Professional Controls</h3>
+      <div id="sliders"></div>
+
+      <h3>Portrait Settings</h3>
+      <label class="check">
+        <input type="checkbox" id="skin" checked>
+        Preserve natural skin tones
+      </label>
+      <label class="check">
+        <input type="checkbox" id="sharpen" checked>
+        Gentle sharpening
+      </label>
+
+      <h3>Crop & Straighten</h3>
+      <label>Aspect Ratio</label>
+      <select id="ratio">
+        <option value="original">Original</option>
+        <option value="1">Square 1:1</option>
+        <option value="0.8">Portrait 4:5</option>
+        <option value="0.5625">Vertical 9:16</option>
+        <option value="1.7777778">Wide 16:9</option>
+      </select>
+
+      <label>Straighten <span id="angleValue">0</span>°</label>
+      <input id="angle" type="range"
+             min="-10" max="10" step="0.5" value="0">
+
+      <button id="enhanceBtn">Auto Enhance</button>
+      <button id="resetBtn" class="secondary">Reset Edits</button>
+    </aside>
+
+    <section class="preview-panel">
+      <div class="preview-heading">
+        <h3>Before & After</h3>
+        <span id="status">Upload a photo to begin</span>
       </div>
 
-      <button id="enhanceBtn">Auto Enhance Photo</button>
-
-      <h2>Before & After</h2>
-
-      <div class="preview">
-        <div>
-          <h3>Original</h3>
-          <img id="originalPreview" alt="Original photo">
-        </div>
-
-        <div>
-          <h3>Enhanced</h3>
-          <canvas id="editedCanvas"></canvas>
-        </div>
+      <div class="comparison" id="comparison">
+        <canvas id="originalCanvas"></canvas>
+        <canvas id="editedCanvas"></canvas>
+        <input type="range" id="compare"
+               min="0" max="100" value="50"
+               aria-label="Before and after comparison">
+        <div class="compare-line" id="compareLine"></div>
+        <span class="tag before">Before</span>
+        <span class="tag after">After</span>
       </div>
 
-      <button id="downloadBtn" disabled>
-        Download Enhanced Photo
-      </button>
+      <div class="actions">
+        <button id="downloadBtn" disabled>
+          Download Photo
+        </button>
+        <button id="batchBtn" class="secondary" disabled>
+          Download All as ZIP
+        </button>
+      </div>
+
+      <h3>Uploaded Photos</h3>
+      <div id="gallery" class="gallery"></div>
     </section>
-  </main>
+  </div>
+</main>
 
-  <footer>
-    <p>Natural edits. Real details. No generative AI.</p>
-  </footer>
+<section id="portfolio" class="portfolio">
+  <p class="eyebrow">PHOTOGRAPHY</p>
+  <h2>DAVOSHOTIT Portfolio</h2>
+  <p>Replace these placeholders with your own photography.</p>
+  <div class="portfolio-grid">
+    <div>Portraits</div>
+    <div>Events</div>
+    <div>Creative Shoots</div>
+  </div>
+</section>
 
-  <script src="script.js"></script>
+<footer>
+  <p>© Natural Photo Studio — DAVOSHOTIT</p>
+  <p>Real photography. Natural editing.</p>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
-
