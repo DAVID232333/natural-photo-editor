@@ -242,10 +242,6 @@ input[type="file"] {
   object-fit: contain;
 }
 
-#editedCanvas {
-  clip-path: inset(0 0 0 50%);
-}
-
 #compare {
   position: absolute;
   inset: 0;
