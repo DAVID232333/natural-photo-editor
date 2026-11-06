@@ -3,32 +3,34 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b0d12">
   <title>DAVOSHOTIT | Natural Photo Studio</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<header>
-  <div class="brand">DAVOSHOTIT <span>STUDIO</span></div>
+<header class="site-header">
+  <a href="#" class="brand">DAVOSHOTIT <span>STUDIO</span></a>
   <nav>
-    <a href="#editor">Editor</a>
+    <a href="#editor">Photo Editor</a>
     <a href="#portfolio">Portfolio</a>
   </nav>
 </header>
 
 <section class="hero">
-  <p class="eyebrow">NATURAL PHOTO ENHANCEMENT</p>
+  <p class="eyebrow">DAVOSHOTIT PHOTOGRAPHY</p>
   <h1>Your photos.<br><span>At their best.</span></h1>
-  <p>Professional color, lighting and detail corrections.</p>
+  <p>Enhance your photos with natural lighting, color, detail,
+     and professional editing controls.</p>
   <a class="primary-link" href="#editor">Start Editing</a>
 </section>
 
 <main id="editor">
   <div class="section-title">
-    <h2>Photo Editor</h2>
-    <p>Upload, customize and download your own photos.</p>
+    <p class="eyebrow">CREATE YOUR LOOK</p>
+    <h2>Natural Photo Editor</h2>
+    <p>Upload your pictures, edit them privately, and download your results.</p>
   </div>
 
   <div class="workspace">
@@ -37,23 +39,29 @@
 
       <div class="upload-zone" id="dropZone">
         <div class="upload-icon">📸</div>
-        <h4>Upload Your Pictures</h4>
-        <p>Drag and drop your photos here</p>
-        <input type="file" id="upload"
+        <h4>Choose Your Pictures</h4>
+        <p>Drag and drop photos here or browse your device.</p>
+        <input
+          type="file"
+          id="upload"
           accept="image/jpeg,image/png,image/webp"
-          multiple>
+          multiple
+          aria-label="Upload photos"
+        >
         <p class="hint">JPG, PNG and WebP supported</p>
       </div>
 
       <p class="privacy-note">
-        🔒 Your photos are edited privately in your browser.
+        🔒 Your photos stay in your browser and are not
+        posted to the public portfolio.
       </p>
 
-      <button id="clearPhotosBtn" class="secondary">
+      <button type="button" id="clearPhotosBtn" class="secondary">
         Clear My Photos
       </button>
 
       <h3>Professional Presets</h3>
+      <label for="preset">Choose a look</label>
       <select id="preset">
         <option value="natural">Natural</option>
         <option value="portrait">Clean Portrait</option>
@@ -62,13 +70,11 @@
         <option value="night">Night Photography</option>
       </select>
 
-      <h3>Auto Enhance</h3>
+      <h3>Editing Strength</h3>
       <label for="strength">
-        Editing Strength
-        <span id="strengthValue">35</span>%
+        Auto Enhancement <span id="strengthValue">35</span>%
       </label>
-      <input id="strength" type="range"
-        min="0" max="100" value="35">
+      <input type="range" id="strength" min="0" max="100" value="35">
 
       <h3>Professional Controls</h3>
       <div id="sliders"></div>
@@ -87,39 +93,36 @@
       <label for="ratio">Aspect Ratio</label>
       <select id="ratio">
         <option value="original">Original</option>
-        <option value="1">Square 1:1</option>
-        <option value="0.8">Portrait 4:5</option>
-        <option value="0.5625">Vertical 9:16</option>
-        <option value="1.7777778">Wide 16:9</option>
+        <option value="1">Square (1:1)</option>
+        <option value="0.8">Portrait (4:5)</option>
+        <option value="0.5625">Vertical (9:16)</option>
+        <option value="1.7777778">Landscape (16:9)</option>
       </select>
 
       <label for="angle">
         Straighten <span id="angleValue">0</span>°
       </label>
-      <input id="angle" type="range"
-        min="-10" max="10" step="0.5" value="0">
+      <input type="range" id="angle" min="-10" max="10" step="0.5" value="0">
 
-      <button id="enhanceBtn">Auto Enhance</button>
-      <button id="resetBtn" class="secondary">
-        Reset Edits
-      </button>
+      <button type="button" id="enhanceBtn">Apply Enhancement</button>
+      <button type="button" id="resetBtn" class="secondary">Reset Edits</button>
     </aside>
 
     <section class="preview-panel">
       <div class="preview-heading">
         <h3>Photo Preview</h3>
-        <span id="status">Upload a photo to begin</span>
+        <span id="status" role="status">Upload a photo to begin</span>
       </div>
 
       <div class="photo-preview">
-        <canvas id="editedCanvas"></canvas>
+        <canvas id="editedCanvas" aria-label="Edited photo preview"></canvas>
       </div>
 
       <div class="actions">
-        <button id="downloadBtn" disabled>
+        <button type="button" id="downloadBtn" disabled>
           Download Photo
         </button>
-        <button id="batchBtn" class="secondary" disabled>
+        <button type="button" id="batchBtn" class="secondary" disabled>
           Download All as ZIP
         </button>
       </div>
@@ -130,58 +133,80 @@
   </div>
 </main>
 
+<!-- PUBLIC PHOTOGRAPHY PORTFOLIO -->
+
 <section id="portfolio" class="portfolio">
-  <p class="eyebrow">PHOTOGRAPHY</p>
+  <p class="eyebrow">MY WORK</p>
   <h2>DAVOSHOTIT Portfolio</h2>
-  <p>A collection of sports, portraits and street photography.</p>
+  <p>A collection of sports, portraits, and street photography.</p>
 
   <div class="portfolio-grid">
-    <button class="portfolio-photo" data-image="photos/DSC_0813.jpeg">
-      <img src="photos/DSC_0813.jpeg" alt="Texas Tech mascot at football stadium" loading="lazy">
+
+    <button type="button" class="portfolio-photo"
+      data-image="photos/DSC_0800.jpeg">
+      <img src="photos/DSC_0800.jpeg"
+           alt="Football players on the field" loading="lazy">
+      <span>Football Photography</span>
+    </button>
+
+    <button type="button" class="portfolio-photo"
+      data-image="photos/DSC_0813.jpeg">
+      <img src="photos/DSC_0813.jpeg"
+           alt="Texas Tech stadium and mascot" loading="lazy">
       <span>Sports Photography</span>
     </button>
-    <button class="portfolio-photo" data-image="photos/DSC_0816.jpeg">
-      <img src="photos/DSC_0816.jpeg" alt="Texas Tech mascot on the field" loading="lazy">
+
+    <button type="button" class="portfolio-photo"
+      data-image="photos/DSC_0816.jpeg">
+      <img src="photos/DSC_0816.jpeg"
+           alt="Texas Tech mascot on the field" loading="lazy">
       <span>Game Day</span>
     </button>
-    <button class="portfolio-photo" data-image="photos/DSC_0800.jpeg">
-      <img src="photos/DSC_0800.jpeg" alt="Football players on the field" loading="lazy">
-      <span>Football Moments</span>
-    </button>
-    <button class="portfolio-photo" data-image="photos/DSC_0837.jpeg">
-      <img src="photos/DSC_0837.jpeg" alt="Highway and sky photography" loading="lazy">
+
+    <button type="button" class="portfolio-photo"
+      data-image="photos/DSC_0837.jpeg">
+      <img src="photos/DSC_0837.jpeg"
+           alt="Highway and landscape" loading="lazy">
       <span>Travel Photography</span>
     </button>
-    <button class="portfolio-photo" data-image="photos/DSC_0881.jpeg">
-      <img src="photos/DSC_0881.jpeg" alt="Night street photography" loading="lazy">
+
+    <button type="button" class="portfolio-photo"
+      data-image="photos/DSC_0881.jpeg">
+      <img src="photos/DSC_0881.jpeg"
+           alt="City street at night" loading="lazy">
       <span>Night Photography</span>
     </button>
-    <button class="portfolio-photo" data-image="photos/Natural_Enhanced_Photo (1).png">
-      <img src="photos/Natural_Enhanced_Photo (1).png" alt="Studio portrait" loading="lazy">
+
+    <button type="button" class="portfolio-photo"
+      data-image="photos/Natural_Enhanced_Photo.png">
+      <img src="photos/Natural_Enhanced_Photo.png"
+           alt="Portrait photograph" loading="lazy">
       <span>Portrait Photography</span>
     </button>
+
   </div>
 </section>
+
+<!-- FULL SCREEN PORTFOLIO VIEWER -->
 
 <div id="lightbox" class="lightbox" hidden
      role="dialog" aria-modal="true"
      aria-label="Portfolio photo viewer">
-  <button id="closeLightbox" class="lightbox-close"
-    aria-label="Close viewer">×</button>
-  <button id="prevPhoto" class="lightbox-prev"
-    aria-label="Previous photo">❮</button>
-  <img id="lightboxImage" alt="Portfolio photograph">
-  <button id="nextPhoto" class="lightbox-next"
-    aria-label="Next photo">❯</button>
+  <button type="button" id="closeLightbox"
+          class="lightbox-close" aria-label="Close photo">×</button>
+  <button type="button" id="prevPhoto"
+          class="lightbox-prev" aria-label="Previous photo">❮</button>
+  <img id="lightboxImage" alt="Selected portfolio photograph">
+  <button type="button" id="nextPhoto"
+          class="lightbox-next" aria-label="Next photo">❯</button>
 </div>
 
 <footer>
-  <p>© DAVOSHOTIT Natural Photo Studio</p>
-  <p>Real photography. Natural editing.</p>
+  <p>© 2026 DAVOSHOTIT STUDIO</p>
+  <p>Photography & Natural Photo Enhancement</p>
 </footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="script.js"></script>
 </body>
 </html>
-
