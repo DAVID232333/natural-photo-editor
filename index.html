@@ -1,301 +1,270 @@
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#0b0a12">
+  <meta name="theme-color" content="#171719">
 
-  <title>DAVOSHOTIT STUDIO — Photo Lab 2026</title>
+  <title>DAVOSHOTIT | Photography & Studio</title>
 
+  <link rel="icon" type="image/png" href="logo.png">
   <link rel="stylesheet" href="style.css">
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" defer></script>
+  <script src="script.js" defer></script>
 </head>
 
 <body>
+  <header class="header">
+    <a href="#home" class="logo">DAVOSHOTIT<span>®</span></a>
 
-  <!-- HEADER -->
-  <header class="top">
+    <nav>
+      <a href="#portfolio">Portfolio</a>
+      <a href="#editor">Photo Editor</a>
+      <a href="#about">About</a>
+    </nav>
 
-    <div class="brand">
-      <span class="mark">D.</span>
-
-      <div>
-        DAVOSHOTIT <b>STUDIO</b>
-        <small>PHOTO LAB / 2026</small>
-      </div>
-    </div>
-
-    <span class="topright">
-      CREATE YOUR LOOK
-      <span class="live">● LIVE</span>
-    </span>
-
+    <a href="#editor" class="nav-button">Open Studio ↗</a>
   </header>
 
   <main>
+    <section class="hero container" id="home">
+      <div class="hero-meta">
+        <span>INDEPENDENT PHOTOGRAPHY STUDIO</span>
+        <span>EST. 2026</span>
+      </div>
 
-    <!-- INTRODUCTION -->
-    <section class="intro">
+      <h1>Every frame<br><em>has a feeling.</em></h1>
 
-      <div>
-        <div class="eyebrow">
-          THE NEXT GENERATION PHOTO EDITOR
-        </div>
-
-        <h1>
-          Make every shot <em>hit different.</em>
-        </h1>
-
+      <div class="hero-bottom">
         <p>
-          Beautiful color. Real skin texture.
-          Your style, your shot.
+          Portraits, real moments, and honest color.
+          Photography that feels like you.
         </p>
+        <a href="#portfolio">Explore the work ↗</a>
       </div>
-
-      <div class="intro-tag">
-        2026 EDITION
-        <br>
-        <strong>COLOR STUDIO</strong>
-      </div>
-
     </section>
 
-    <!-- PHOTO EDITING WORKSPACE -->
-    <section class="workspace">
-
-      <!-- PHOTO PREVIEW -->
-      <div class="preview panel">
-
-        <div class="panel-head">
-          <span>01 / YOUR CANVAS</span>
-          <span id="resolution">NO PHOTO LOADED</span>
-        </div>
-
-        <div class="stage" id="stage">
-
-          <div class="empty" id="empty">
-
-            <div class="upload-icon">✦</div>
-
-            <h2>Your best shot starts here.</h2>
-
-            <p>Drop a photo or browse to begin</p>
-
-            <button id="choose" class="primary">
-              + Upload photo
-            </button>
-
-            <small>
-              JPG · PNG · WEBP ·
-              Processed privately on your device
-            </small>
-
-          </div>
-
-          <canvas id="mainCanvas" hidden></canvas>
-
-        </div>
-
-        <!-- PHOTO ACTION BUTTONS -->
-        <div class="preview-actions">
-
-          <label class="file-label" for="file">
-            ↥ Change photo
-          </label>
-
-          <input
-            id="file"
-            type="file"
-            accept="image/jpeg,image/png,image/webp,image/*"
-            hidden
-          >
-
-          <button id="reset" class="ghost">
-            ↺ Reset edits
-          </button>
-
-          <button
-            id="download"
-            class="primary"
-            disabled
-          >
-            ↓ Export full resolution
-          </button>
-
-        </div>
-
-        <div
-          id="status"
-          role="status"
-          aria-live="polite"
-        ></div>
-
-      </div>
-
-      <!-- EDITING TOOLS -->
-      <aside class="tools panel">
-
-        <div class="panel-head">
-          <span>02 / THE EDIT LAB</span>
-          <span class="accent">PRO CONTROLS</span>
-        </div>
-
-        <div class="tool-inner">
-
-          <div class="tool-heading">
-            <h2>Find your vibe.</h2>
-
-            <p>
-              See your photo in every look
-              before you choose.
-            </p>
-          </div>
-
-          <!-- VISUAL FILTER THUMBNAILS -->
-          <div id="filters" class="filters"></div>
-
-          <!-- FILTER STRENGTH -->
-          <div class="slider-head">
-
-            <label for="strength">
-              Filter intensity
-            </label>
-
-            <output id="strengthValue">
-              75%
-            </output>
-
-          </div>
-
-          <input
-            id="strength"
-            type="range"
-            min="0"
-            max="100"
-            value="75"
-          >
-
-          <!-- MANUAL EDITING CONTROLS -->
-          <div class="subhead">
-
-            FINE TUNE
-
-            <button
-              id="resetSliders"
-              class="textbutton"
-            >
-              Reset sliders
-            </button>
-
-          </div>
-
-          <div id="sliders"></div>
-
-        </div>
-
-      </aside>
-
-    </section>
-
-    <!-- ABOUT THE EDITOR -->
-    <section class="lower">
-
-      <div>
-
-        <span class="eyebrow">
-          BEHIND THE EDIT
-        </span>
-
-        <h2>Real photos. Elevated.</h2>
-
-        <p>
-          Designed to bring out your photo's
-          natural colors and detail, not
-          replace them. Your uploads stay
-          on your device.
-        </p>
-
-      </div>
-
-      <div class="stats">
-
+    <!-- AUTOMATIC PHOTOGRAPHY PORTFOLIO -->
+    <section class="portfolio container" id="portfolio">
+      <div class="section-heading">
         <div>
-          <b>12</b>
-          <span>LIVE LOOKS</span>
+          <span class="eyebrow">01 / SELECTED WORK</span>
+          <h2>Behind the lens.</h2>
         </div>
-
-        <div>
-          <b>9</b>
-          <span>EDIT CONTROLS</span>
-        </div>
-
-        <div>
-          <b>100%</b>
-          <span>LOCAL EDITING</span>
-        </div>
-
+        <p>Photography by DAVOSHOTIT.</p>
       </div>
 
-    </section>
-
-    <!-- PHOTOGRAPHY PORTFOLIO -->
-    <section class="portfolio">
-
-      <div class="panel-head">
-
-        <span>
-          03 / DAVOSHOTIT PORTFOLIO
-        </span>
-
-        <span>
-          YOUR WORK, YOUR BRAND
-        </span>
-
+      <div class="gallery-filters">
+        <button class="gallery-filter active"
+          data-filter="all">All photos</button>
+        <button class="gallery-filter"
+          data-filter="portrait">Portraits</button>
+        <button class="gallery-filter"
+          data-filter="landscape">Landscape</button>
       </div>
 
-      <h2>Selected frames.</h2>
+      <div id="portfolioGallery" class="gallery-grid"></div>
 
-      <p>
-        Add your own images to a
-        <code>pictures</code> folder
-        and update the image paths
-        in the gallery below.
+      <p id="galleryStatus" class="gallery-status">
+        Loading portfolio photos...
       </p>
-
-      <div class="gallery">
-
-        <div class="gallery-placeholder">
-          YOUR PORTRAITS
-        </div>
-
-        <div class="gallery-placeholder">
-          YOUR EVENTS
-        </div>
-
-        <div class="gallery-placeholder">
-          YOUR CREATIVE WORK
-        </div>
-
-      </div>
-
     </section>
 
+    <!-- FULL SCREEN PHOTO VIEWER -->
+    <div id="lightbox" class="lightbox" hidden
+      role="dialog" aria-modal="true"
+      aria-label="Portfolio photo viewer">
+
+      <button id="closeLightbox" class="lightbox-close"
+        aria-label="Close photo">×</button>
+
+      <img id="lightboxImage" alt="DAVOSHOTIT Photography">
+      <p id="lightboxCaption"></p>
+    </div>
+
+    <!-- PHOTO EDITOR -->
+    <section class="editor-section" id="editor">
+      <div class="container">
+        <div class="editor-heading">
+          <div>
+            <span class="eyebrow">02 / CREATIVE WORKSPACE</span>
+            <h2>The editing room.</h2>
+            <p>Professional adjustments. Natural results.</p>
+          </div>
+          <span class="privacy">PHOTOS STAY ON YOUR DEVICE</span>
+        </div>
+
+        <div class="workspace">
+          <!-- LEFT: IMAGE PREVIEW -->
+          <div class="editor-panel">
+            <div class="panel-header">
+              <strong>Canvas</strong>
+              <span id="imageInfo">No photo selected</span>
+            </div>
+
+            <div id="dropZone" class="drop-zone">
+              <div id="uploadPlaceholder" class="upload-placeholder">
+                <div class="upload-icon">+</div>
+                <h3>Start with a photo.</h3>
+                <p>
+                  Drag and drop images here, or choose photos
+                  from your device.
+                </p>
+
+                <label for="photoInput"
+                  id="choosePhotos" class="primary-button"
+                  role="button" tabindex="0">
+                  Choose Photos
+                </label>
+
+                <p class="file-types">JPG · PNG · WEBP</p>
+              </div>
+
+              <canvas id="editorCanvas" hidden></canvas>
+              <div id="cropOverlay" hidden>
+                <span class="crop-handle tl"></span>
+                <span class="crop-handle tr"></span>
+                <span class="crop-handle bl"></span>
+                <span class="crop-handle br"></span>
+              </div>
+            </div>
+
+            <input type="file" id="photoInput"
+              accept="image/jpeg,image/png,image/webp"
+              multiple class="hidden-input">
+
+            <div class="editor-actions">
+              <label for="photoInput"
+                class="action-button upload-again">
+                + Add Photos
+              </label>
+
+              <button id="downloadOne" disabled>
+                Download Photo
+              </button>
+
+              <button id="downloadAll"
+                class="primary-button" disabled>
+                Download All ZIP ↓
+              </button>
+
+              <button id="removePhoto" disabled>
+                Remove
+              </button>
+            </div>
+
+            <div id="editorStatus" class="editor-status"
+              role="status">
+              Your images are edited privately in your browser.
+            </div>
+
+            <div id="exportProgress" class="progress" hidden>
+              <div id="progressFill"></div>
+            </div>
+
+            <div id="photoThumbnails" class="photo-thumbnails"></div>
+          </div>
+
+          <!-- RIGHT: EDITING CONTROLS -->
+          <aside class="editor-panel tools-panel">
+            <div class="panel-header">
+              <strong>Adjustments</strong>
+              <button id="resetEdits" class="reset-button">
+                Reset
+              </button>
+            </div>
+
+            <div class="tools-content">
+              <h3>01 / Filters</h3>
+              <div id="filterGrid" class="filter-grid"></div>
+
+              <div class="slider-row">
+                <label for="filterStrength">
+                  Filter Strength
+                  <output id="filterStrengthValue">70%</output>
+                </label>
+                <input type="range" id="filterStrength"
+                  min="0" max="100" value="70">
+              </div>
+
+              <h3>02 / Light & Color</h3>
+              <div id="adjustmentSliders"></div>
+
+              <h3>03 / Portrait Finish</h3>
+              <p class="tool-hint">
+                Subtle overall smoothing. Keep it low
+                to preserve natural detail.
+              </p>
+
+              <div class="slider-row">
+                <label for="softening">
+                  Softening
+                  <output id="softeningValue">0</output>
+                </label>
+                <input type="range" id="softening"
+                  min="0" max="35" value="0">
+              </div>
+
+              <h3>04 / Crop & Geometry</h3>
+
+              <label class="field-label" for="aspectRatio">
+                Aspect Ratio
+              </label>
+
+              <select id="aspectRatio">
+                <option value="free">Free</option>
+                <option value="1">Square 1:1</option>
+                <option value="0.8">Portrait 4:5</option>
+                <option value="0.5625">Story 9:16</option>
+                <option value="1.7777777778">Wide 16:9</option>
+              </select>
+
+              <div class="slider-row">
+                <label for="straighten">
+                  Straighten
+                  <output id="straightenValue">0°</output>
+                </label>
+                <input type="range" id="straighten"
+                  min="-15" max="15" step="0.5" value="0">
+              </div>
+
+              <div class="geometry-buttons">
+                <button id="rotateLeft">↶ Rotate Left</button>
+                <button id="rotateRight">↷ Rotate Right</button>
+                <button id="cropButton">Edit Crop</button>
+              </div>
+
+              <label class="batch-option">
+                <input type="checkbox" id="applyToAll">
+                Apply selected photo's edits to every
+                photo in the ZIP
+              </label>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <section class="about container" id="about">
+      <span class="eyebrow">03 / ABOUT THE STUDIO</span>
+
+      <div>
+        <h2>Made for the way<br>you see the world.</h2>
+        <p>
+          DAVOSHOTIT is a photography-first creative studio.
+          Every image tells a story, and every edit should
+          respect the original moment.
+        </p>
+      </div>
+    </section>
   </main>
 
-  <!-- FOOTER -->
-  <footer>
-
-    © 2026 DAVOSHOTIT STUDIO
-
-    <span>
-      MADE FOR THE MOMENT.
-    </span>
-
+  <footer class="footer container">
+    <strong>DAVOSHOTIT®</strong>
+    <span>Photography & Studio Tools</span>
+    <span>© 2026 DAVOSHOTIT</span>
   </footer>
-
-  <!-- JAVASCRIPT -->
-  <script src="script.js" defer></script>
-
 </body>
 </html>
