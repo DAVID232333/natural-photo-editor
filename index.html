@@ -1,954 +1,301 @@
 
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>DAVOSHOTIT Studio | Photo Editor</title>
-<link rel="icon" type="image/png" href="logo.png">
 
-<style>
-:root {
-  --bg:#0c0e13;
-  --panel:#171a22;
-  --line:#30343e;
-  --text:#f5f5f7;
-  --muted:#a6aab5;
-  --accent:#d5a86c;
-}
-* { box-sizing:border-box; }
-body {
-  margin:0;
-  background:var(--bg);
-  color:var(--text);
-  font-family:Arial,Helvetica,sans-serif;
-}
-header {
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:16px;
-  padding:18px 5%;
-  border-bottom:1px solid var(--line);
-}
-.brand {
-  display:flex;
-  align-items:center;
-  gap:12px;
-  font-weight:800;
-  letter-spacing:2px;
-  font-size:18px;
-}
-.brand img {
-  width:44px;
-  height:44px;
-  object-fit:contain;
-}
-.tag {
-  color:var(--muted);
-  font-size:12px;
-}
-main {
-  max-width:1350px;
-  margin:auto;
-  padding:35px 20px;
-}
-h1 {
-  font-size:clamp(30px,5vw,54px);
-  margin:10px 0;
-}
-h2 { font-size:21px; }
-p { color:var(--muted); line-height:1.6; }
-.gold { color:var(--accent); }
-.workspace {
-  display:grid;
-  grid-template-columns:minmax(0,1fr) 340px;
-  gap:20px;
-  margin-top:25px;
-}
-.panel {
-  background:var(--panel);
-  border:1px solid var(--line);
-  border-radius:15px;
-  padding:20px;
-  min-width:0;
-}
-button,select {
-  background:#282c36;
-  border:1px solid #444956;
-  color:white;
-  padding:11px 14px;
-  border-radius:9px;
-  cursor:pointer;
-  font-size:14px;
-}
-button:hover { border-color:var(--accent); }
-button.active {
-  background:#6c5030;
-  border-color:var(--accent);
-}
-.primary {
-  background:var(--accent);
-  color:#17110a;
-  font-weight:bold;
-  border:none;
-}
-button:disabled {
-  opacity:.45;
-  cursor:not-allowed;
-}
-.actions {
-  display:flex;
-  flex-wrap:wrap;
-  gap:10px;
-  margin-bottom:15px;
-}
-.stage {
-  background:#090b10;
-  border:1px dashed #444956;
-  border-radius:12px;
-  min-height:350px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  overflow:hidden;
-  position:relative;
-}
-.stage canvas {
-  display:block;
-  max-width:100%;
-  max-height:650px;
-  width:auto;
-  height:auto;
-}
-.placeholder {
-  padding:60px 15px;
-  text-align:center;
-  color:var(--muted);
-}
-#photoCanvas { display:none; }
-.filter-list {
-  display:flex;
-  gap:10px;
-  overflow-x:auto;
-  padding:15px 0;
-}
-.filter {
-  flex:0 0 105px;
-  padding:7px;
-  text-align:center;
-  font-size:12px;
-}
-.filter canvas {
-  width:100%;
-  aspect-ratio:1;
-  object-fit:cover;
-  border-radius:6px;
-  background:#252831;
-  display:block;
-  margin-bottom:7px;
-}
-.control { margin:16px 0; }
-.control-head {
-  display:flex;
-  justify-content:space-between;
-  gap:8px;
-  font-size:13px;
-  margin-bottom:7px;
-}
-.control-head span:last-child {
-  color:var(--accent);
-}
-input[type=range] {
-  width:100%;
-  accent-color:var(--accent);
-  cursor:pointer;
-}
-.section-title {
-  margin-top:24px;
-  padding-top:20px;
-  border-top:1px solid var(--line);
-}
-.row {
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-}
-.row button { flex:1; }
-#status {
-  color:var(--muted);
-  font-size:13px;
-  margin-top:12px;
-  min-height:20px;
-}
-#fileList {
-  display:flex;
-  gap:8px;
-  overflow-x:auto;
-  margin-top:15px;
-}
-.file-btn {
-  flex:0 0 auto;
-  max-width:170px;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
-}
-.portfolio {
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
-  gap:14px;
-  margin-top:20px;
-}
-.portfolio img {
-  width:100%;
-  aspect-ratio:4/5;
-  object-fit:cover;
-  border-radius:10px;
-}
-footer {
-  text-align:center;
-  padding:35px;
-  border-top:1px solid var(--line);
-  color:var(--muted);
-  font-size:13px;
-}
-@media(max-width:850px) {
-  .workspace { grid-template-columns:1fr; }
-  header { padding:15px; }
-  .tag { display:none; }
-  .stage { min-height:250px; }
-}
-</style>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b0a12">
+
+  <title>DAVOSHOTIT STUDIO — Photo Lab 2026</title>
+
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-<header>
-  <div class="brand">
-    <img src="logo.png" alt="DAVOSHOTIT logo"
-         onerror="this.style.display='none'">
-    <span>DAVOSHOTIT <span class="gold">STUDIO</span></span>
-  </div>
-  <span class="tag">PHOTOGRAPHY & PHOTO EDITING</span>
-</header>
 
-<main>
-  <h1>Edit your photos. <span class="gold">Your way.</span></h1>
-  <p>Professional photo editing with creative filters and precise controls.</p>
+  <!-- HEADER -->
+  <header class="top">
 
-  <div class="workspace">
-    <section class="panel">
-      <div class="actions">
-        <button class="primary" id="uploadBtn">Upload Photos</button>
-        <input id="upload" type="file" accept="image/*"
-               multiple hidden>
-        <button id="compareBtn">Hold to Compare</button>
-        <button id="downloadBtn">Download Photo</button>
-        <button id="downloadAllBtn">Download All</button>
+    <div class="brand">
+      <span class="mark">D.</span>
+
+      <div>
+        DAVOSHOTIT <b>STUDIO</b>
+        <small>PHOTO LAB / 2026</small>
       </div>
+    </div>
 
-      <div class="stage">
-        <div id="placeholder" class="placeholder">
-          <h2>Your photo starts here</h2>
-          <p>Upload a picture to begin editing.</p>
+    <span class="topright">
+      CREATE YOUR LOOK
+      <span class="live">● LIVE</span>
+    </span>
+
+  </header>
+
+  <main>
+
+    <!-- INTRODUCTION -->
+    <section class="intro">
+
+      <div>
+        <div class="eyebrow">
+          THE NEXT GENERATION PHOTO EDITOR
         </div>
-        <canvas id="photoCanvas"></canvas>
+
+        <h1>
+          Make every shot <em>hit different.</em>
+        </h1>
+
+        <p>
+          Beautiful color. Real skin texture.
+          Your style, your shot.
+        </p>
       </div>
 
-      <div id="status">Ready to edit.</div>
-      <div id="fileList"></div>
-
-      <h2 class="section-title">Creative Filters</h2>
-      <div class="filter-list" id="filterList"></div>
-
-      <div class="control">
-        <div class="control-head">
-          <span>Filter Strength</span>
-          <span id="strengthValue">75%</span>
-        </div>
-        <input id="strength" type="range"
-               min="0" max="100" value="75">
+      <div class="intro-tag">
+        2026 EDITION
+        <br>
+        <strong>COLOR STUDIO</strong>
       </div>
 
-      <h2 class="section-title">Crop & Straighten</h2>
-      <div class="row">
-        <button class="crop active" data-ratio="original">Original</button>
-        <button class="crop" data-ratio="1">1:1</button>
-        <button class="crop" data-ratio="0.8">4:5</button>
-        <button class="crop" data-ratio="1.7777778">16:9</button>
-      </div>
-
-      <div class="control">
-        <div class="control-head">
-          <span>Straighten</span>
-          <span id="rotateValue">0°</span>
-        </div>
-        <input id="rotate" type="range"
-               min="-15" max="15" value="0">
-      </div>
-
-      <div class="row">
-        <button id="resetBtn">Reset Current Photo</button>
-      </div>
     </section>
 
-    <aside class="panel">
-      <h2>Professional Adjustments</h2>
-      <p>Fine-tune your photo using the controls below.</p>
-      <div id="controls"></div>
-    </aside>
-  </div>
-
-  <section class="panel" style="margin-top:30px">
-    <h2>Photography Portfolio</h2>
-    <div class="portfolio" id="portfolio"></div>
-  </section>
-</main>
-
-<footer>
-  © DAVOSHOTIT STUDIO
-</footer>
-
-<script>
-"use strict";
-
-const $ = id => document.getElementById(id);
-
-const filterNames = [
-  "Original",
-  "Golden Glow",
-  "Soft Glow",
-  "Vintage Film",
-  "Cool Tone",
-  "Dreamy",
-  "Clean Portrait",
-  "Moody",
-  "Sunset",
-  "Vivid",
-  "Fade",
-  "Black & White"
-];
-
-const filters = {
-  "Original":       [0,0,0,0,0,0],
-  "Golden Glow":    [5,8,7,10,18,0],
-  "Soft Glow":      [8,-9,-3,0,7,0],
-  "Vintage Film":   [-3,-12,-12,-15,10,0],
-  "Cool Tone":      [0,3,9,-5,-17,0],
-  "Dreamy":         [9,-15,3,-7,9,0],
-  "Clean Portrait": [7,4,4,-3,3,0],
-  "Moody":          [-10,18,0,-12,-7,0],
-  "Sunset":         [5,10,8,14,23,0],
-  "Vivid":          [4,12,22,10,4,0],
-  "Fade":           [7,-18,-15,-18,2,0],
-  "Black & White":  [0,12,-100,5,0,0]
-};
-
-// Each photo has its own independent editing state.
-const defaults = {
-  exposure:0,
-  brightness:0,
-  contrast:0,
-  highlights:0,
-  shadows:0,
-  saturation:0,
-  warmth:0,
-  tint:0,
-  sharpness:0
-};
-
-const settings = [
-  ["exposure","Exposure",-100,100],
-  ["brightness","Brightness",-100,100],
-  ["contrast","Contrast",-100,100],
-  ["highlights","Highlights",-100,100],
-  ["shadows","Shadows",-100,100],
-  ["saturation","Saturation",-100,100],
-  ["warmth","Warmth",-100,100],
-  ["tint","Tint",-100,100],
-  ["sharpness","Sharpness",0,100]
-];
-
-let photos = [];
-let activeIndex = -1;
-let renderTimer = null;
-let renderVersion = 0;
-let comparing = false;
-
-const canvas = $("photoCanvas");
-const ctx = canvas.getContext("2d", {
-  willReadFrequently:true
-});
-
-function current() {
-  return photos[activeIndex] || null;
-}
-
-function setStatus(message) {
-  $("status").textContent = message;
-}
-
-function clamp(v) {
-  return Math.max(0,Math.min(255,v));
-}
-
-function getAdjustments(photo) {
-  const f = filters[photo.filter];
-  const strength = photo.strength / 100;
-  const a = {...photo.adjustments};
-
-  a.brightness += f[0]*strength;
-  a.contrast += f[1]*strength;
-  a.saturation += f[2]*strength;
-  a.highlights += f[3]*strength;
-  a.warmth += f[4]*strength;
-  a.tint += f[5]*strength;
-
-  return a;
-}
-
-function processPixels(data,a) {
-  const p = data.data;
-  const exposure = Math.pow(2,a.exposure/100*1.5);
-  const contrast = Math.max(.05,1+a.contrast/100);
-  const saturation = Math.max(0,1+a.saturation/100);
-  const warmth = a.warmth*.35;
-  const tint = a.tint*.25;
-
-  for(let i=0;i<p.length;i+=4) {
-    let r=p[i]*exposure;
-    let g=p[i+1]*exposure;
-    let b=p[i+2]*exposure;
-
-    const luminance=.2126*r+.7152*g+.0722*b;
-    const normalized=Math.max(0,Math.min(1,luminance/255));
-
-    const shadowWeight=Math.pow(1-normalized,2);
-    const highlightWeight=Math.pow(normalized,2);
-
-    const toneShift =
-      a.shadows*.65*shadowWeight +
-      a.highlights*.65*highlightWeight;
-
-    r+=toneShift+a.brightness*.6;
-    g+=toneShift+a.brightness*.6;
-    b+=toneShift+a.brightness*.6;
-
-    r=(r-128)*contrast+128;
-    g=(g-128)*contrast+128;
-    b=(b-128)*contrast+128;
-
-    const gray=.2126*r+.7152*g+.0722*b;
-    r=gray+(r-gray)*saturation;
-    g=gray+(g-gray)*saturation;
-    b=gray+(b-gray)*saturation;
-
-    r+=warmth+tint;
-    g-=tint;
-    b-=warmth;
-
-    p[i]=clamp(r);
-    p[i+1]=clamp(g);
-    p[i+2]=clamp(b);
-  }
-}
-
-function sharpenImage(data,amount) {
-  if(amount<=0) return;
-
-  const {width:w,height:h} = data;
-  const p=data.data;
-  const original=new Uint8ClampedArray(p);
-  const factor=amount/100*.65;
-
-  for(let y=1;y<h-1;y++) {
-    for(let x=1;x<w-1;x++) {
-      const i=(y*w+x)*4;
-      for(let c=0;c<3;c++) {
-        const center=original[i+c];
-        const neighbors=(
-          original[i-4+c]+original[i+4+c]+
-          original[i-w*4+c]+original[i+w*4+c]
-        )/4;
-
-        p[i+c]=clamp(
-          center+(center-neighbors)*factor
-        );
-      }
-    }
-  }
-}
-
-function drawSource(photo,target,maxDimension=null) {
-  const img=photo.img;
-  const angle=photo.rotate*Math.PI/180;
-
-  // Find the largest centered crop that fits the selected ratio.
-  const iw=img.naturalWidth;
-  const ih=img.naturalHeight;
-
-  const cos=Math.abs(Math.cos(angle));
-  const sin=Math.abs(Math.sin(angle));
-
-  // Conservative centered crop that avoids blank rotated corners.
-  const safeScale=1/(cos+sin*Math.max(iw,ih)/Math.min(iw,ih));
-  const safeW=iw*safeScale;
-  const safeH=ih*safeScale;
-
-  let cropW=safeW;
-  let cropH=safeH;
-
-  if(photo.ratio!=="original") {
-    const ratio=Number(photo.ratio);
-    if(cropW/cropH>ratio) cropW=cropH*ratio;
-    else cropH=cropW/ratio;
-  }
-
-  const scale=maxDimension
-    ? Math.min(1,maxDimension/Math.max(cropW,cropH))
-    : 1;
-
-  target.width=Math.max(1,Math.round(cropW*scale));
-  target.height=Math.max(1,Math.round(cropH*scale));
-
-  const c=target.getContext("2d",{
-    willReadFrequently:true
-  });
-
-  c.clearRect(0,0,target.width,target.height);
-  c.save();
-  c.translate(target.width/2,target.height/2);
-  c.rotate(angle);
-  c.scale(scale,scale);
-  c.drawImage(img,-iw/2,-ih/2);
-  c.restore();
-
-  return c;
-}
-
-function createEditedCanvas(photo,maxDimension=null,original=false) {
-  const output=document.createElement("canvas");
-  const c=drawSource(photo,output,maxDimension);
-
-  if(original) return output;
-
-  const data=c.getImageData(0,0,output.width,output.height);
-  const a=getAdjustments(photo);
-
-  processPixels(data,a);
-  sharpenImage(data,a.sharpness);
-  c.putImageData(data,0,0);
-
-  return output;
-}
-
-function render() {
-  const photo=current();
-  if(!photo) return;
-
-  const version=++renderVersion;
-  clearTimeout(renderTimer);
-
-  renderTimer=setTimeout(()=>{
-    if(version!==renderVersion) return;
-
-    try {
-      const result=createEditedCanvas(
-        photo,1600,comparing
-      );
-
-      canvas.width=result.width;
-      canvas.height=result.height;
-      ctx.clearRect(0,0,canvas.width,canvas.height);
-      ctx.drawImage(result,0,0);
-
-      setStatus(
-        photo.name+" · "+photo.img.naturalWidth+
-        " × "+photo.img.naturalHeight+
-        " · Preview ready"
-      );
-    } catch(error) {
-      console.error(error);
-      setStatus("Unable to process this photo.");
-    }
-  },30);
-}
-
-function scheduleRender() {
-  render();
-}
-
-function makeControls() {
-  const holder=$("controls");
-
-  settings.forEach(([key,label,min,max])=>{
-    const wrapper=document.createElement("div");
-    wrapper.className="control";
-
-    const head=document.createElement("div");
-    head.className="control-head";
-
-    const name=document.createElement("span");
-    name.textContent=label;
-
-    const value=document.createElement("span");
-    value.id=key+"Value";
-    value.textContent="0";
-
-    const slider=document.createElement("input");
-    slider.type="range";
-    slider.id="slider-"+key;
-    slider.min=min;
-    slider.max=max;
-    slider.value=0;
-
-    slider.addEventListener("input",()=>{
-      const photo=current();
-      if(!photo) return;
-
-      photo.adjustments[key]=Number(slider.value);
-      value.textContent=slider.value;
-      scheduleRender();
-    });
-
-    head.append(name,value);
-    wrapper.append(head,slider);
-    holder.append(wrapper);
-  });
-}
-
-function syncControls() {
-  const photo=current();
-  if(!photo) return;
-
-  settings.forEach(([key])=>{
-    const value=photo.adjustments[key];
-    $("slider-"+key).value=value;
-    $(key+"Value").textContent=value;
-  });
-
-  $("strength").value=photo.strength;
-  $("strengthValue").textContent=photo.strength+"%";
-  $("rotate").value=photo.rotate;
-  $("rotateValue").textContent=photo.rotate+"°";
-
-  document.querySelectorAll(".crop").forEach(btn=>{
-    btn.classList.toggle(
-      "active",btn.dataset.ratio===photo.ratio
-    );
-  });
-
-  updateFilterButtons();
-}
-
-function updateFilterButtons() {
-  const photo=current();
-
-  document.querySelectorAll(".filter").forEach(btn=>{
-    btn.classList.toggle(
-      "active",!!photo&&btn.dataset.name===photo.filter
-    );
-  });
-}
-
-function updateFileButtons() {
-  const holder=$("fileList");
-  holder.innerHTML="";
-
-  photos.forEach((photo,index)=>{
-    const btn=document.createElement("button");
-    btn.className="file-btn"+(
-      index===activeIndex?" active":""
-    );
-    btn.textContent=photo.name;
-    btn.title=photo.name;
-
-    btn.onclick=()=>{
-      activeIndex=index;
-      syncControls();
-      updateFileButtons();
-      makeFilterPreviews();
-      render();
-    };
-
-    holder.append(btn);
-  });
-}
-
-function makeFilterPreviews() {
-  const photo=current();
-  if(!photo) return;
-
-  document.querySelectorAll(".filter").forEach(btn=>{
-    const thumb=btn.querySelector("canvas");
-    const previewPhoto={
-      ...photo,
-      filter:btn.dataset.name
-    };
-
-    const output=createEditedCanvas(previewPhoto,140);
-    thumb.width=output.width;
-    thumb.height=output.height;
-    thumb.getContext("2d").drawImage(output,0,0);
-  });
-}
-
-function buildFilters() {
-  const holder=$("filterList");
-
-  filterNames.forEach(name=>{
-    const btn=document.createElement("button");
-    btn.className="filter";
-    btn.dataset.name=name;
-
-    const preview=document.createElement("canvas");
-    preview.width=100;
-    preview.height=100;
-
-    const text=document.createElement("span");
-    text.textContent=name;
-
-    btn.append(preview,text);
-
-    btn.onclick=()=>{
-      const photo=current();
-      if(!photo) {
-        setStatus("Upload a photo first.");
-        return;
-      }
-
-      photo.filter=name;
-      updateFilterButtons();
-      render();
-    };
-
-    holder.append(btn);
-  });
-}
-
-function addPhoto(file) {
-  return new Promise(resolve=>{
-    if(!file.type.startsWith("image/")) {
-      resolve();
-      return;
-    }
-
-    const url=URL.createObjectURL(file);
-    const img=new Image();
-
-    img.onload=()=>{
-      photos.push({
-        img,
-        url,
-        name:file.name,
-        filter:"Original",
-        strength:75,
-        ratio:"original",
-        rotate:0,
-        adjustments:{...defaults}
-      });
-      resolve();
-    };
-
-    img.onerror=()=>{
-      URL.revokeObjectURL(url);
-      resolve();
-    };
-
-    img.src=url;
-  });
-}
-
-$("uploadBtn").onclick=()=>$("upload").click();
-
-$("upload").addEventListener("change",async event=>{
-  const files=[...event.target.files];
-  if(!files.length) return;
-
-  setStatus("Loading photos...");
-  const firstNewIndex=photos.length;
-
-  for(const file of files) {
-    await addPhoto(file);
-  }
-
-  if(photos.length===firstNewIndex) {
-    setStatus("No supported images were loaded.");
-    return;
-  }
-
-  activeIndex=firstNewIndex;
-
-  $("placeholder").style.display="none";
-  canvas.style.display="block";
-
-  syncControls();
-  updateFileButtons();
-  makeFilterPreviews();
-  render();
-
-  event.target.value="";
-});
-
-$("strength").oninput=event=>{
-  const photo=current();
-  if(!photo) return;
-
-  photo.strength=Number(event.target.value);
-  $("strengthValue").textContent=photo.strength+"%";
-  render();
-};
-
-$("rotate").oninput=event=>{
-  const photo=current();
-  if(!photo) return;
-
-  photo.rotate=Number(event.target.value);
-  $("rotateValue").textContent=photo.rotate+"°";
-  render();
-};
-
-document.querySelectorAll(".crop").forEach(btn=>{
-  btn.onclick=()=>{
-    const photo=current();
-    if(!photo) return;
-
-    photo.ratio=btn.dataset.ratio;
-    syncControls();
-    render();
-  };
-});
-
-$("resetBtn").onclick=()=>{
-  const photo=current();
-  if(!photo) return;
-
-  photo.filter="Original";
-  photo.strength=75;
-  photo.ratio="original";
-  photo.rotate=0;
-  photo.adjustments={...defaults};
-
-  syncControls();
-  makeFilterPreviews();
-  render();
-};
-
-// Hold to compare the unedited source.
-const compareBtn=$("compareBtn");
-
-function startCompare() {
-  if(!current()) return;
-  comparing=true;
-  render();
-}
-
-function stopCompare() {
-  if(!comparing) return;
-  comparing=false;
-  render();
-}
-
-compareBtn.addEventListener("pointerdown",startCompare);
-compareBtn.addEventListener("pointerup",stopCompare);
-compareBtn.addEventListener("pointerleave",stopCompare);
-compareBtn.addEventListener("pointercancel",stopCompare);
-
-function saveCanvas(output,filename) {
-  return new Promise((resolve,reject)=>{
-    output.toBlob(blob=>{
-      if(!blob) {
-        reject(new Error("Image export failed"));
-        return;
-      }
-
-      const url=URL.createObjectURL(blob);
-      const link=document.createElement("a");
-
-      link.href=url;
-      link.download=filename;
-      document.body.append(link);
-      link.click();
-      link.remove();
-
-      setTimeout(()=>URL.revokeObjectURL(url),60000);
-      resolve();
-    },"image/png");
-  });
-}
-
-function exportName(photo) {
-  const base=photo.name.replace(/\.[^.]+$/,"");
-  return base+"_DAVOSHOTIT.png";
-}
-
-async function downloadPhoto(photo) {
-  // Full resolution processing, not just a screenshot.
-  const output=createEditedCanvas(photo);
-  await saveCanvas(output,exportName(photo));
-}
-
-$("downloadBtn").onclick=async()=>{
-  const photo=current();
-  if(!photo) {
-    setStatus("Upload a photo first.");
-    return;
-  }
-
-  try {
-    setStatus("Exporting full-resolution photo...");
-    await downloadPhoto(photo);
-    setStatus("Edited photo downloaded.");
-  } catch(error) {
-    console.error(error);
-    setStatus("Download failed. Try a smaller image.");
-  }
-};
-
-$("downloadAllBtn").onclick=async()=>{
-  if(!photos.length) {
-    setStatus("Upload photos first.");
-    return;
-  }
-
-  try {
-    for(let i=0;i<photos.length;i++) {
-      setStatus(
-        "Downloading "+(i+1)+" of "+photos.length+"..."
-      );
-      await downloadPhoto(photos[i]);
-      await new Promise(r=>setTimeout(r,350));
-    }
-
-    setStatus("All photo downloads requested.");
-  } catch(error) {
-    console.error(error);
-    setStatus("One or more downloads failed.");
-  }
-};
-
-// Existing photography portfolio.
-// These files should remain in the photos folder.
-const portfolioFiles=[
-  "DSC_0800.jpeg",
-  "DSC_0813 (1).jpeg",
-  "DSC_0813.jpeg",
-  "DSC_0816.jpeg",
-  "DSC_0837.jpeg",
-  "DSC_0881.jpeg"
-];
-
-portfolioFiles.forEach(filename=>{
-  const img=document.createElement("img");
-  img.src="photos/"+encodeURIComponent(filename);
-  img.alt="DAVOSHOTIT photography";
-  img.loading="lazy";
-  img.onerror=()=>img.remove();
-  $("portfolio").append(img);
-});
-
-makeControls();
-buildFilters();
-</script>
+    <!-- PHOTO EDITING WORKSPACE -->
+    <section class="workspace">
+
+      <!-- PHOTO PREVIEW -->
+      <div class="preview panel">
+
+        <div class="panel-head">
+          <span>01 / YOUR CANVAS</span>
+          <span id="resolution">NO PHOTO LOADED</span>
+        </div>
+
+        <div class="stage" id="stage">
+
+          <div class="empty" id="empty">
+
+            <div class="upload-icon">✦</div>
+
+            <h2>Your best shot starts here.</h2>
+
+            <p>Drop a photo or browse to begin</p>
+
+            <button id="choose" class="primary">
+              + Upload photo
+            </button>
+
+            <small>
+              JPG · PNG · WEBP ·
+              Processed privately on your device
+            </small>
+
+          </div>
+
+          <canvas id="mainCanvas" hidden></canvas>
+
+        </div>
+
+        <!-- PHOTO ACTION BUTTONS -->
+        <div class="preview-actions">
+
+          <label class="file-label" for="file">
+            ↥ Change photo
+          </label>
+
+          <input
+            id="file"
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/*"
+            hidden
+          >
+
+          <button id="reset" class="ghost">
+            ↺ Reset edits
+          </button>
+
+          <button
+            id="download"
+            class="primary"
+            disabled
+          >
+            ↓ Export full resolution
+          </button>
+
+        </div>
+
+        <div
+          id="status"
+          role="status"
+          aria-live="polite"
+        ></div>
+
+      </div>
+
+      <!-- EDITING TOOLS -->
+      <aside class="tools panel">
+
+        <div class="panel-head">
+          <span>02 / THE EDIT LAB</span>
+          <span class="accent">PRO CONTROLS</span>
+        </div>
+
+        <div class="tool-inner">
+
+          <div class="tool-heading">
+            <h2>Find your vibe.</h2>
+
+            <p>
+              See your photo in every look
+              before you choose.
+            </p>
+          </div>
+
+          <!-- VISUAL FILTER THUMBNAILS -->
+          <div id="filters" class="filters"></div>
+
+          <!-- FILTER STRENGTH -->
+          <div class="slider-head">
+
+            <label for="strength">
+              Filter intensity
+            </label>
+
+            <output id="strengthValue">
+              75%
+            </output>
+
+          </div>
+
+          <input
+            id="strength"
+            type="range"
+            min="0"
+            max="100"
+            value="75"
+          >
+
+          <!-- MANUAL EDITING CONTROLS -->
+          <div class="subhead">
+
+            FINE TUNE
+
+            <button
+              id="resetSliders"
+              class="textbutton"
+            >
+              Reset sliders
+            </button>
+
+          </div>
+
+          <div id="sliders"></div>
+
+        </div>
+
+      </aside>
+
+    </section>
+
+    <!-- ABOUT THE EDITOR -->
+    <section class="lower">
+
+      <div>
+
+        <span class="eyebrow">
+          BEHIND THE EDIT
+        </span>
+
+        <h2>Real photos. Elevated.</h2>
+
+        <p>
+          Designed to bring out your photo's
+          natural colors and detail, not
+          replace them. Your uploads stay
+          on your device.
+        </p>
+
+      </div>
+
+      <div class="stats">
+
+        <div>
+          <b>12</b>
+          <span>LIVE LOOKS</span>
+        </div>
+
+        <div>
+          <b>9</b>
+          <span>EDIT CONTROLS</span>
+        </div>
+
+        <div>
+          <b>100%</b>
+          <span>LOCAL EDITING</span>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- PHOTOGRAPHY PORTFOLIO -->
+    <section class="portfolio">
+
+      <div class="panel-head">
+
+        <span>
+          03 / DAVOSHOTIT PORTFOLIO
+        </span>
+
+        <span>
+          YOUR WORK, YOUR BRAND
+        </span>
+
+      </div>
+
+      <h2>Selected frames.</h2>
+
+      <p>
+        Add your own images to a
+        <code>pictures</code> folder
+        and update the image paths
+        in the gallery below.
+      </p>
+
+      <div class="gallery">
+
+        <div class="gallery-placeholder">
+          YOUR PORTRAITS
+        </div>
+
+        <div class="gallery-placeholder">
+          YOUR EVENTS
+        </div>
+
+        <div class="gallery-placeholder">
+          YOUR CREATIVE WORK
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+
+    © 2026 DAVOSHOTIT STUDIO
+
+    <span>
+      MADE FOR THE MOMENT.
+    </span>
+
+  </footer>
+
+  <!-- JAVASCRIPT -->
+  <script src="script.js" defer></script>
+
 </body>
 </html>
