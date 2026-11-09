@@ -1,801 +1,474 @@
 
-"use strict";
+'use strict';
 
 const $ = id => document.getElementById(id);
 
-const controls = {
-  exposure: ["Exposure", -100, 100, 0],
-  contrast: ["Contrast", -100, 100, 0],
-  highlights: ["Highlights", -100, 100, 0],
-  shadows: ["Shadows", -100, 100, 0],
-  saturation: ["Saturation", -100, 100, 0],
-  temperature: ["Temperature", -100, 100, 0],
-  clarity: ["Clarity", 0, 100, 15]
-};
-
-const presets = {
-  natural: [0, 0, 0, 0, 0, 0, 15],
-  portrait: [8, 4, -15, 12, -3, 3, 8],
-  golden: [8, 8, -18, 8, 10, 18, 12],
-  cinematic: [-5, 18, -25, 8, -12, -5, 20],
-  night: [12, 8, -20, 24, 3, -4, 10]
-};
-
-let photos = [];
-let activeIndex = 0;
-let uploadToken = 0;
-let renderToken = 0;
-let renderTimer = null;
-let busy = false;
-
-const allowedTypes = [
-  "image/jpeg",
-  "image/png",
-  "image/webp"
+const looks = [
+  ['Original', 0, 0, 0, 0, 0],
+  ['Natural Pro', .06, .05, .06, .02, 0],
+  ['Golden Hour', .12, .08, .12, .10, 0],
+  ['Cool Blue', -.05, .04, -.08, -.13, 0],
+  ['Vintage', -.06, -.13, -.14, .09, .12],
+  ['Soft Glow', .10, -.12, -.03, .04, .08],
+  ['Moody', -.12, .15, -.12, -.04, .08],
+  ['Clean Pop', .08, .12, .14, 0, 0],
+  ['Film 2026', -.04, .10, -.07, .06, .16],
+  ['Rosé', .05, .02, .06, .08, .06],
+  ['Cinematic', -.08, .18, -.08, -.07, .06],
+  ['B&W', 0, .10, -1, 0, .02]
 ];
 
-const maxPixels = 35000000;
-
-function clamp(value) {
-  return Math.max(0, Math.min(255, value));
-}
-
-function setStatus(message) {
-  $("status").textContent = message;
-}
-
-function setDownloadButtons() {
-  $("downloadBtn").disabled = busy || photos.length === 0;
-  $("batchBtn").disabled = busy || photos.length === 0;
-}
-
-// CREATE EDITING CONTROLS
-
-Object.entries(controls).forEach(([id, config]) => {
-  const [label, min, max, initial] = config;
-  const wrapper = document.createElement("div");
-
-  const text = document.createElement("label");
-  text.htmlFor = id;
-  text.textContent = label + " ";
-
-  const value = document.createElement("span");
-  value.id = id + "Value";
-  value.textContent = initial;
-  text.appendChild(value);
-
-  const slider = document.createElement("input");
-  slider.type = "range";
-  slider.id = id;
-  slider.min = min;
-  slider.max = max;
-  slider.value = initial;
-
-  slider.addEventListener("input", () => {
-    value.textContent = slider.value;
-    scheduleRender();
-  });
-
-  wrapper.append(text, slider);
-  $("sliders").appendChild(wrapper);
-});
-
-function setControl(id, value) {
-  $(id).value = value;
-
-  const display = $(id + "Value");
-  if (display) display.textContent = value;
-}
-
-function settings() {
-  const result = {};
-
-  Object.keys(controls).forEach(id => {
-    result[id] = Number($(id).value);
-  });
-
-  result.strength = Number($("strength").value);
-  result.skin = $("skin").checked;
-  result.sharpen = $("sharpen").checked;
-  result.ratio = $("ratio").value;
-  result.angle = Number($("angle").value);
-
-  return result;
-}
-
-// PRESETS AND SLIDERS
-
-$("preset").addEventListener("change", () => {
-  const values = presets[$("preset").value];
-
-  Object.keys(controls).forEach((id, index) => {
-    setControl(id, values[index]);
-  });
-
-  scheduleRender();
-});
-
-$("strength").addEventListener("input", () => {
-  $("strengthValue").textContent = $("strength").value;
-  scheduleRender();
-});
-
-$("angle").addEventListener("input", () => {
-  $("angleValue").textContent = $("angle").value;
-  scheduleRender();
-});
-
-["skin", "sharpen", "ratio"].forEach(id => {
-  $(id).addEventListener("change", scheduleRender);
-});
-
-$("enhanceBtn").addEventListener("click", scheduleRender);
-
-$("resetBtn").addEventListener("click", () => {
-  $("preset").value = "natural";
-
-  Object.keys(controls).forEach(id => {
-    setControl(id, controls[id][3]);
-  });
-
-  $("strength").value = 35;
-  $("strengthValue").textContent = 35;
-
-  $("angle").value = 0;
-  $("angleValue").textContent = 0;
-
-  $("skin").checked = true;
-  $("sharpen").checked = true;
-  $("ratio").value = "original";
-
-  scheduleRender();
-});
-
-// PRIVATE VISITOR PHOTO UPLOAD
-
-function loadImage(file) {
-  return new Promise((resolve, reject) => {
-    const url = URL.createObjectURL(file);
-    const image = new Image();
-
-    image.onload = () => {
-      resolve({
-        file,
-        image,
-        url
-      });
-    };
-
-    image.onerror = () => {
-      URL.revokeObjectURL(url);
-      reject(new Error("Could not load " + file.name));
-    };
-
-    image.src = url;
-  });
-}
-
-function releasePhotos() {
-  photos.forEach(photo => {
-    URL.revokeObjectURL(photo.url);
-  });
-
-  photos = [];
-  activeIndex = 0;
-}
-
-function clearPreview() {
-  const canvas = $("editedCanvas");
-  canvas.width = 0;
-  canvas.height = 0;
-}
-
-async function handleFiles(fileList) {
-  const token = ++uploadToken;
-  const selected = Array.from(fileList).filter(file =>
-    allowedTypes.includes(file.type)
-  );
-
-  clearTimeout(renderTimer);
-  renderToken++;
-  releasePhotos();
-  clearPreview();
-
-  $("gallery").innerHTML = "";
-  setDownloadButtons();
-
-  if (!selected.length) {
-    setStatus("Please choose JPG, PNG or WebP photos.");
-    return;
-  }
-
-  setStatus("Loading photos...");
-
-  const loaded = [];
-
-  for (const file of selected) {
-    if (token !== uploadToken) break;
-
-    try {
-      const photo = await loadImage(file);
-
-      if (token !== uploadToken) {
-        URL.revokeObjectURL(photo.url);
-        break;
-      }
-
-      const pixels =
-        photo.image.naturalWidth *
-        photo.image.naturalHeight;
-
-      if (pixels > maxPixels) {
-        URL.revokeObjectURL(photo.url);
-        console.warn("Image too large:", file.name);
-        continue;
-      }
-
-      loaded.push(photo);
-    } catch (error) {
-      console.error(error);
-    }
-  }
-
-  if (token !== uploadToken) {
-    loaded.forEach(photo => URL.revokeObjectURL(photo.url));
-    return;
-  }
-
-  photos = loaded;
-  buildGallery();
-  setDownloadButtons();
-
-  if (photos.length) {
-    scheduleRender();
-  } else {
-    setStatus("No photos could be loaded.");
-  }
-}
-
-$("upload").addEventListener("change", event => {
-  handleFiles(event.target.files);
-});
-
-// DRAG AND DROP
-
-const dropZone = $("dropZone");
-
-dropZone.addEventListener("dragover", event => {
-  event.preventDefault();
-  dropZone.classList.add("dragover");
-});
-
-dropZone.addEventListener("dragleave", event => {
-  if (!dropZone.contains(event.relatedTarget)) {
-    dropZone.classList.remove("dragover");
-  }
-});
-
-dropZone.addEventListener("drop", event => {
-  event.preventDefault();
-  dropZone.classList.remove("dragover");
-
-  if (event.dataTransfer.files.length) {
-    $("upload").value = "";
-    handleFiles(event.dataTransfer.files);
-  }
-});
-
-// CLEAR UPLOADED PHOTOS
-
-$("clearPhotosBtn").addEventListener("click", () => {
-  uploadToken++;
-  renderToken++;
-  clearTimeout(renderTimer);
-
-  releasePhotos();
-  clearPreview();
-
-  $("upload").value = "";
-  $("gallery").innerHTML = "";
-
-  setDownloadButtons();
-  setStatus("Your photos have been cleared.");
-});
-
-// PRIVATE UPLOAD GALLERY
-
-function buildGallery() {
-  const gallery = $("gallery");
-  gallery.innerHTML = "";
-
-  photos.forEach((photo, index) => {
-    const button = document.createElement("button");
-    button.type = "button";
-
-    if (index === activeIndex) {
-      button.classList.add("active");
-    }
-
-    const image = document.createElement("img");
-    image.src = photo.url;
-    image.alt = photo.file.name;
-
-    const label = document.createElement("small");
-    label.textContent = photo.file.name;
-
-    button.append(image, label);
-
-    button.addEventListener("click", () => {
-      activeIndex = index;
-      buildGallery();
-      scheduleRender();
-    });
-
-        gallery.appendChild(button);
-  });
-}
-
-// CROP AND STRAIGHTEN
-
-function prepareCanvas(image, s) {
-  const width = image.naturalWidth;
-  const height = image.naturalHeight;
-
-  const rotated = document.createElement("canvas");
-  rotated.width = width;
-  rotated.height = height;
-
-  const ctx = rotated.getContext("2d");
-  const radians = s.angle * Math.PI / 180;
-
-  const zoom =
-    Math.abs(Math.cos(radians)) +
-    Math.abs(Math.sin(radians)) *
-    Math.max(width / height, height / width);
-
-  ctx.translate(width / 2, height / 2);
-  ctx.rotate(radians);
-  ctx.scale(zoom, zoom);
-  ctx.drawImage(
-    image,
-    -width / 2,
-    -height / 2,
-    width,
-    height
-  );
-
-  if (s.ratio === "original") {
-    return rotated;
-  }
-
-  const ratio = Number(s.ratio);
-  let cropWidth = width;
-  let cropHeight = height;
-
-  if (width / height > ratio) {
-    cropWidth = Math.round(height * ratio);
-  } else {
-    cropHeight = Math.round(width / ratio);
-  }
-
-  const cropped = document.createElement("canvas");
-  cropped.width = cropWidth;
-  cropped.height = cropHeight;
-
-  cropped.getContext("2d").drawImage(
-    rotated,
-    Math.floor((width - cropWidth) / 2),
-    Math.floor((height - cropHeight) / 2),
-    cropWidth,
-    cropHeight,
-    0,
-    0,
-    cropWidth,
-    cropHeight
-  );
-
-  return cropped;
-}
-
-// NATURAL PHOTO ENHANCEMENT
-
-function processImage(image, s) {
-  const canvas = prepareCanvas(image, s);
-
-  const ctx = canvas.getContext("2d", {
+const controls = [
+  ['Exposure', -100, 100, 0],
+  ['Contrast', -100, 100, 0],
+  ['Highlights', -100, 100, 0],
+  ['Shadows', -100, 100, 0],
+  ['Whites', -100, 100, 0],
+  ['Blacks', -100, 100, 0],
+  ['Saturation', -100, 100, 0],
+  ['Vibrance', -100, 100, 0],
+  ['Sharpness', 0, 100, 0]
+];
+
+const settings = Object.fromEntries(
+  controls.map(c => [c[0], c[3]])
+);
+
+let image = null;
+let selected = 0;
+let strength = 75;
+let renderTicket = 0;
+
+const main = $('mainCanvas');
+
+const clamp = (n, a = 0, b = 255) =>
+  Math.max(a, Math.min(b, n));
+
+function renderPixels(canvas, src, w, h, filterIdx) {
+  canvas.width = w;
+  canvas.height = h;
+
+  const ctx = canvas.getContext('2d', {
     willReadFrequently: true
   });
 
-  const frame = ctx.getImageData(
-    0, 0, canvas.width, canvas.height
-  );
+  ctx.clearRect(0, 0, w, h);
+  ctx.drawImage(src, 0, 0, w, h);
 
-  const data = frame.data;
-  const strength = s.strength / 100;
+  const img = ctx.getImageData(0, 0, w, h);
+  const p = img.data;
 
-  // Estimate average brightness.
-  let total = 0;
-  let samples = 0;
+  const f = looks[filterIdx];
+  const mix = filterIdx === 0 ? 0 : strength / 100;
 
-  for (let i = 0; i < data.length; i += 160) {
-    total +=
-      0.2126 * data[i] +
-      0.7152 * data[i + 1] +
-      0.0722 * data[i + 2];
+  const exp = f[1] * mix + settings.Exposure / 100;
+  const contrast = f[2] * mix + settings.Contrast / 100;
+  const sat = f[3] * mix + settings.Saturation / 100;
+  const warm = f[4] * mix;
+  const fade = f[5] * mix;
+  const vibr = settings.Vibrance / 100;
 
-    samples++;
-  }
+  const high = settings.Highlights / 100;
+  const shadows = settings.Shadows / 100;
+  const whites = settings.Whites / 100;
+  const blacks = settings.Blacks / 100;
 
-  const average = samples ? total / samples : 128;
+  const contrastFactor = Math.max(.1, 1 + contrast);
 
-  const autoExposure = Math.max(
-    -12,
-    Math.min(12, (128 - average) * 0.20)
-  );
+  for (let i = 0; i < p.length; i += 4) {
+    let r = p[i] / 255;
+    let g = p[i + 1] / 255;
+    let b = p[i + 2] / 255;
 
-  const exposure =
-    autoExposure * strength +
-    s.exposure * 0.35;
+    const lum = .2126 * r + .7152 * g + .0722 * b;
+    const shadowWeight = (1 - lum) ** 2;
+    const highWeight = lum ** 2;
 
-  const contrast = 1 + s.contrast * 0.0045;
-  const saturation = 1 + s.saturation * 0.0045;
-  const warmth = s.temperature * 0.18;
+    const adjustment =
+      shadows * shadowWeight * .42 +
+      high * highWeight * .42 +
+      whites * Math.max(0, (lum - .55) / .45) * .28 +
+      blacks * Math.max(0, (.45 - lum) / .45) * -.28;
 
-  for (let i = 0; i < data.length; i += 4) {
-    let r = data[i];
-    let g = data[i + 1];
-    let b = data[i + 2];
+    r += exp * .48 + adjustment + warm * .17;
+    g += exp * .48 + adjustment + warm * .018;
+    b += exp * .48 + adjustment - warm * .17;
 
-    const light = (
-      0.2126 * r +
-      0.7152 * g +
-      0.0722 * b
-    ) / 255;
+    r = (r - .5) * contrastFactor + .5;
+    g = (g - .5) * contrastFactor + .5;
+    b = (b - .5) * contrastFactor + .5;
 
-    const shadowWeight = (1 - light) ** 2;
-    const highlightWeight = light ** 2;
+    const l = .2126 * r + .7152 * g + .0722 * b;
+    const colorfulness =
+      Math.max(r, g, b) - Math.min(r, g, b);
 
-    const tonal =
-      s.shadows * shadowWeight * 0.45 +
-      s.highlights * highlightWeight * 0.45;
-
-    r += exposure + tonal + warmth;
-    g += exposure + tonal;
-    b += exposure + tonal - warmth;
-
-    r = (r - 128) * contrast + 128;
-    g = (g - 128) * contrast + 128;
-    b = (b - 128) * contrast + 128;
-
-    // Gentle color adjustment for skin-like colors.
-    const skinLike =
-      r > 55 &&
-      r > g * 1.06 &&
-      g > b * 0.88 &&
-      r - b > 12;
-
-    const colorFactor = s.skin && skinLike
-      ? 1 + (saturation - 1) * 0.3
-      : saturation;
-
-    const gray =
-      0.299 * r +
-      0.587 * g +
-      0.114 * b;
-
-    data[i] = clamp(gray + (r - gray) * colorFactor);
-    data[i + 1] = clamp(gray + (g - gray) * colorFactor);
-    data[i + 2] = clamp(gray + (b - gray) * colorFactor);
-  }
-
-  ctx.putImageData(frame, 0, 0);
-
-  // Optional gentle sharpening.
-  const amount = s.sharpen
-    ? s.clarity / 100 * strength * 0.4
-    : 0;
-
-  if (amount > 0) {
-    const blurred = document.createElement("canvas");
-    blurred.width = canvas.width;
-    blurred.height = canvas.height;
-
-    const blurCtx = blurred.getContext("2d", {
-      willReadFrequently: true
-    });
-
-    blurCtx.filter = "blur(1px)";
-    blurCtx.drawImage(canvas, 0, 0);
-
-    const sharp = ctx.getImageData(
-      0, 0, canvas.width, canvas.height
+    const saturationFactor = Math.max(
+      0,
+      1 + sat +
+      vibr * (1 - clamp(colorfulness, 0, 1)) * .8
     );
 
-    const soft = blurCtx.getImageData(
-      0, 0, canvas.width, canvas.height
-    );
+    r = l + (r - l) * saturationFactor;
+    g = l + (g - l) * saturationFactor;
+    b = l + (b - l) * saturationFactor;
 
-    for (let i = 0; i < sharp.data.length; i += 4) {
-      for (let channel = 0; channel < 3; channel++) {
-        const difference =
-          sharp.data[i + channel] -
-          soft.data[i + channel];
+    p[i] = clamp((r * (1 - fade) + .5 * fade) * 255);
+    p[i + 1] = clamp((g * (1 - fade) + .5 * fade) * 255);
+    p[i + 2] = clamp((b * (1 - fade) + .5 * fade) * 255);
+  }
 
-        if (Math.abs(difference) > 3) {
-          sharp.data[i + channel] = clamp(
-            sharp.data[i + channel] +
-            amount * difference
+  if (settings.Sharpness > 0) {
+    const original = new Uint8ClampedArray(p);
+    const amt = settings.Sharpness / 100 * .48;
+
+    for (let y = 1; y < h - 1; y++) {
+      for (let x = 1; x < w - 1; x++) {
+        const i = (y * w + x) * 4;
+
+        for (let c = 0; c < 3; c++) {
+          p[i + c] = clamp(
+            original[i + c] +
+            amt * (
+              4 * original[i + c] -
+              original[i - 4 + c] -
+              original[i + 4 + c] -
+              original[i - w * 4 + c] -
+              original[i + w * 4 + c]
+            )
           );
         }
       }
     }
-
-    ctx.putImageData(sharp, 0, 0);
   }
 
-  return canvas;
+  ctx.putImageData(img, 0, 0);
 }
 
-// PHOTO PREVIEW
+function draw() {
+  if (!image) return;
 
-function scheduleRender() {
-  clearTimeout(renderTimer);
-  const token = ++renderToken;
+  const max = 1100;
+  const factor = Math.min(
+    1,
+    max / Math.max(
+      image.naturalWidth,
+      image.naturalHeight
+    )
+  );
 
-  renderTimer = setTimeout(() => {
-    if (token === renderToken) {
-      renderCurrent();
+  renderPixels(
+    main,
+    image,
+    Math.max(1, Math.round(image.naturalWidth * factor)),
+    Math.max(1, Math.round(image.naturalHeight * factor)),
+    selected
+  );
+}
+
+function thumbnails() {
+  const root = $('filters');
+  root.replaceChildren();
+
+  looks.forEach((look, i) => {
+    const btn = document.createElement('button');
+
+    btn.type = 'button';
+    btn.className =
+      'filter' + (i === selected ? ' selected' : '');
+
+    btn.setAttribute(
+      'aria-pressed',
+      String(i === selected)
+    );
+
+    btn.title = look[0];
+
+    const c = document.createElement('canvas');
+    c.width = 80;
+    c.height = 100;
+
+    if (image) {
+      const iw = image.naturalWidth;
+      const ih = image.naturalHeight;
+
+      const scale = Math.max(80 / iw, 100 / ih);
+      const sw = 80 / scale;
+      const sh = 100 / scale;
+      const sx = (iw - sw) / 2;
+      const sy = (ih - sh) / 2;
+
+      const crop = document.createElement('canvas');
+      crop.width = 80;
+      crop.height = 100;
+
+      crop.getContext('2d').drawImage(
+        image, sx, sy, sw, sh, 0, 0, 80, 100
+      );
+
+      renderPixels(c, crop, 80, 100, i);
+    } else {
+      const ctx = c.getContext('2d');
+
+      const grad = ctx.createLinearGradient(
+        0, 0, 80, 100
+      );
+
+      grad.addColorStop(0, [
+        '#6b5b84',
+        '#b39f87',
+        '#c58d5a',
+        '#526e9d',
+        '#988471',
+        '#d6b2bc',
+        '#45445e',
+        '#ac88a9',
+        '#736d67',
+        '#b484a5',
+        '#34435e',
+        '#777777'
+      ][i]);
+
+      grad.addColorStop(1, '#151321');
+
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 80, 100);
     }
-  }, 120);
-}
 
-function renderCurrent() {
-  if (!photos.length) return;
+    const label = document.createElement('span');
+    label.textContent = look[0];
 
-  setStatus("Editing photo...");
+    btn.append(c, label);
 
-  try {
-    const photo = photos[activeIndex];
-    const result = processImage(photo.image, settings());
+    btn.addEventListener('click', () => {
+      selected = i;
+      schedule();
+    });
 
-    const preview = $("editedCanvas");
-    preview.width = result.width;
-    preview.height = result.height;
-
-    preview.getContext("2d").drawImage(result, 0, 0);
-
-    setStatus(`${result.width} × ${result.height} pixels`);
-  } catch (error) {
-    console.error(error);
-    setStatus("Could not edit this photo.");
-  }
-}
-
-// DOWNLOAD HELPERS
-
-function canvasToBlob(canvas) {
-  return new Promise((resolve, reject) => {
-    canvas.toBlob(blob => {
-      if (blob) {
-        resolve(blob);
-      } else {
-        reject(new Error("Photo export failed."));
-      }
-    }, "image/png");
+    root.append(btn);
   });
 }
 
-function saveFile(blob, filename) {
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
+function schedule() {
+  cancelAnimationFrame(renderTicket);
 
-  link.href = url;
-  link.download = filename;
-
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-
-  setTimeout(() => {
-    URL.revokeObjectURL(url);
-  }, 10000);
+  renderTicket = requestAnimationFrame(() => {
+    draw();
+    thumbnails();
+  });
 }
 
-// DOWNLOAD ONE PHOTO
+function initControls() {
+  const root = $('sliders');
 
-$("downloadBtn").addEventListener("click", async () => {
-  if (!photos.length || busy) return;
+  controls.forEach(([name, min, max, value]) => {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'control';
 
-  busy = true;
-  setDownloadButtons();
+    const head = document.createElement('div');
+    head.className = 'control-head';
 
-  try {
-    setStatus("Preparing your download...");
+    const label = document.createElement('label');
+    label.textContent = name;
 
-    const photo = photos[activeIndex];
-    const result = processImage(photo.image, settings());
-    const blob = await canvasToBlob(result);
+    const id = 'slider' + name;
+    label.htmlFor = id;
 
-    const filename = photo.file.name
-      .replace(/\.[^.]+$/, "")
-      .replace(/[^a-z0-9_-]/gi, "_");
+    const out = document.createElement('output');
+    out.textContent = String(value);
 
-    saveFile(blob, `${filename}_DAVOSHOTIT.png`);
-    setStatus("Photo downloaded!");
-  } catch (error) {
-    console.error(error);
-    setStatus("Download failed.");
-    alert(error.message);
-  } finally {
-    busy = false;
-    setDownloadButtons();
-  }
-});
+    head.append(label, out);
 
-// DOWNLOAD ALL PHOTOS AS ZIP
+    const input = document.createElement('input');
 
-$("batchBtn").addEventListener("click", async () => {
-  if (!photos.length || busy) return;
+    input.type = 'range';
+    input.min = min;
+    input.max = max;
+    input.value = value;
+    input.id = id;
 
-  if (typeof JSZip === "undefined") {
-    alert("ZIP download library did not load.");
+    input.addEventListener('input', () => {
+      settings[name] = Number(input.value);
+      out.textContent = input.value;
+      draw();
+    });
+
+    wrapper.append(head, input);
+    root.append(wrapper);
+  });
+}
+
+function resetSliders() {
+  controls.forEach(([name, , , def]) => {
+    settings[name] = def;
+
+    const slider = $('slider' + name);
+    slider.value = def;
+
+    slider.previousElementSibling
+      .querySelector('output').textContent = def;
+  });
+
+  draw();
+}
+
+function loadFile(file) {
+  if (!file) return;
+
+  if (!file.type.startsWith('image/')) {
+    $('status').textContent =
+      'Please select an image.';
     return;
   }
 
-  busy = true;
-  setDownloadButtons();
+  if (file.size > 40 * 1024 * 1024) {
+    $('status').textContent =
+      'This file is over 40 MB.';
+    return;
+  }
+
+  const url = URL.createObjectURL(file);
+  const img = new Image();
+
+  img.onload = () => {
+    URL.revokeObjectURL(url);
+
+    image = img;
+    selected = 0;
+    strength = 75;
+
+    $('strength').value = 75;
+    $('strengthValue').textContent = '75%';
+
+    resetSliders();
+
+    $('empty').hidden = true;
+    main.hidden = false;
+
+    $('resolution').textContent =
+      img.naturalWidth + ' × ' + img.naturalHeight;
+
+    $('download').disabled = false;
+
+    $('status').textContent =
+      'Photo ready — choose a filter.';
+
+    schedule();
+  };
+
+  img.onerror = () => {
+    URL.revokeObjectURL(url);
+    $('status').textContent =
+      'Could not open this photo.';
+  };
+
+  img.src = url;
+}
+
+$('choose').addEventListener('click', () => {
+  $('file').click();
+});
+
+$('file').addEventListener('change', e => {
+  loadFile(e.target.files[0]);
+});
+
+$('strength').addEventListener('input', e => {
+  strength = Number(e.target.value);
+  $('strengthValue').textContent = strength + '%';
+  schedule();
+});
+
+$('resetSliders').addEventListener(
+  'click',
+  resetSliders
+);
+
+$('reset').addEventListener('click', () => {
+  selected = 0;
+  strength = 75;
+
+  $('strength').value = 75;
+  $('strengthValue').textContent = '75%';
+
+  resetSliders();
+  schedule();
+});
+
+const stage = $('stage');
+
+stage.addEventListener('dragover', e => {
+  e.preventDefault();
+  stage.classList.add('drag');
+});
+
+stage.addEventListener('dragleave', () => {
+  stage.classList.remove('drag');
+});
+
+stage.addEventListener('drop', e => {
+  e.preventDefault();
+  stage.classList.remove('drag');
+
+  loadFile(e.dataTransfer.files[0]);
+});
+
+$('download').addEventListener('click', async () => {
+  if (!image) return;
+
+  const btn = $('download');
+  btn.disabled = true;
+
+  $('status').textContent =
+    'Rendering full-resolution photo…';
+
+  await new Promise(resolve => setTimeout(resolve, 20));
 
   try {
-    const zip = new JSZip();
-    const currentSettings = settings();
-    const selectedPhotos = [...photos];
+    const full = document.createElement('canvas');
 
-    for (let i = 0; i < selectedPhotos.length; i++) {
-      const photo = selectedPhotos[i];
+    renderPixels(
+      full,
+      image,
+      image.naturalWidth,
+      image.naturalHeight,
+      selected
+    );
 
-      setStatus(
-        `Editing photo ${i + 1} of ${selectedPhotos.length}`
-      );
-
-      const result = processImage(
-        photo.image,
-        currentSettings
-      );
-
-      const blob = await canvasToBlob(result);
-
-      const name = photo.file.name
-        .replace(/\.[^.]+$/, "")
-        .replace(/[^a-z0-9_-]/gi, "_");
-
-      zip.file(
-        `${i + 1}_${name}_DAVOSHOTIT.png`,
-        blob
-      );
-
-      await new Promise(resolve => setTimeout(resolve, 0));
-    }
-
-    setStatus("Creating ZIP file...");
-
-    const archive = await zip.generateAsync({
-      type: "blob",
-      compression: "DEFLATE",
-      compressionOptions: { level: 3 }
+    const blob = await new Promise(resolve => {
+      full.toBlob(resolve, 'image/jpeg', .95);
     });
 
-    saveFile(archive, "DAVOSHOTIT_Edited_Photos.zip");
-    setStatus("All photos downloaded!");
-  } catch (error) {
-    console.error(error);
-    setStatus("Batch download failed.");
-    alert("Try downloading fewer photos at once.");
-  } finally {
-    busy = false;
-    setDownloadButtons();
-  }
-});
-
-// FULL-SCREEN PUBLIC PORTFOLIO
-
-const portfolioItems = [
-  ...document.querySelectorAll(".portfolio-photo")
-];
-
-const lightbox = $("lightbox");
-const lightboxImage = $("lightboxImage");
-
-let portfolioIndex = 0;
-let previousFocus = null;
-
-function showPortfolioPhoto(index) {
-  if (!portfolioItems.length) return;
-
-  portfolioIndex =
-    (index + portfolioItems.length) % portfolioItems.length;
-
-  const item = portfolioItems[portfolioIndex];
-
-  lightboxImage.src = item.dataset.image;
-  lightboxImage.alt = item.querySelector("img").alt;
-}
-
-function openLightbox(index) {
-  previousFocus = document.activeElement;
-
-  showPortfolioPhoto(index);
-  lightbox.hidden = false;
-
-  document.body.style.overflow = "hidden";
-  $("closeLightbox").focus();
-}
-
-function closeLightbox() {
-  lightbox.hidden = true;
-  lightboxImage.removeAttribute("src");
-
-  document.body.style.overflow = "";
-
-  if (previousFocus) {
-    previousFocus.focus();
-  }
-}
-
-portfolioItems.forEach((item, index) => {
-  item.addEventListener("click", () => {
-    openLightbox(index);
-  });
-});
-
-$("closeLightbox").addEventListener("click", closeLightbox);
-
-$("prevPhoto").addEventListener("click", () => {
-  showPortfolioPhoto(portfolioIndex - 1);
-});
-
-$("nextPhoto").addEventListener("click", () => {
-  showPortfolioPhoto(portfolioIndex + 1);
-});
-
-lightbox.addEventListener("click", event => {
-  if (event.target === lightbox) {
-    closeLightbox();
-  }
-});
-
-document.addEventListener("keydown", event => {
-  if (lightbox.hidden) return;
-
-  if (event.key === "Escape") {
-    closeLightbox();
-  }
-
-  if (event.key === "ArrowLeft") {
-    showPortfolioPhoto(portfolioIndex - 1);
-  }
-
-  if (event.key === "ArrowRight") {
-    showPortfolioPhoto(portfolioIndex + 1);
-  }
-
-  if (event.key === "Tab") {
-    const buttons = [
-      $("closeLightbox"),
-      $("prevPhoto"),
-      $("nextPhoto")
-    ];
-
-    const current = buttons.indexOf(document.activeElement);
-
-    if (event.shiftKey && current === 0) {
-      event.preventDefault();
-      buttons[buttons.length - 1].focus();
-    } else if (
-      !event.shiftKey &&
-      current === buttons.length - 1
-    ) {
-      event.preventDefault();
-      buttons[0].focus();
+    if (!blob) {
+      throw new Error('Export failed');
     }
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+
+    a.href = url;
+    a.download = 'DAVOSHOTIT_2026_edit.jpg';
+
+    document.body.append(a);
+    a.click();
+    a.remove();
+
+    setTimeout(() => {
+      URL.revokeObjectURL(url);
+    }, 2000);
+
+    $('status').textContent =
+      'Export complete — full resolution JPEG.';
+
+  } catch (err) {
+    $('status').textContent =
+      'Export failed. Try a smaller image.';
+
+    console.error(err);
+
+  } finally {
+    btn.disabled = false;
   }
 });
+
+initControls();
+thumbnails();
